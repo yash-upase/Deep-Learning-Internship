@@ -1,0 +1,87 @@
+from bs4 import *
+import requests
+import os
+ 
+def folder_create(images):
+    try:
+        folder_name = input("Enter Folder Name:- ")
+        os.mkdir(folder_name) # Folder Creation
+ 
+    except:
+        print("Folder Exist with that name!") # If the same folder name already exists
+        folder_create()
+ 
+    download_images(images, folder_name)
+ 
+ 
+def download_images(images, folder_name):
+   
+    # initial count is zero
+    count = 0
+ 
+    # print total images found in URL
+    print(f"Total {len(images)} Image Found!")
+ 
+    # checking if images is not zero
+    if len(images) != 0:
+        for i, image in enumerate(images): 
+            try:
+                image_link = image["data-srcset"]
+                 
+            except:
+                try:
+                    image_link = image["data-src"]
+                except:
+                    try:
+                        image_link = image["data-fallback-src"]
+                    except:
+                        try:
+                            image_link = image["src"]
+ 
+                        # if no Source URL found
+                        except:
+                            pass
+ 
+            try:
+                r = requests.get(image_link).content
+                try:
+                     r = str(r, 'utf-8')
+ 
+                except UnicodeDecodeError:
+                     with open(f"{folder_name}/images{i+1}.jpg", "wb+") as f:
+                        f.write(r)
+                     count += 1
+            except:
+                pass
+ 
+        if count == len(images):
+            print("All Images Downloaded!")
+             
+        else:
+            print(f"Total {count} Images Downloaded Out of {len(images)}")
+ 
+# MAIN FUNCTION START
+def main(url):
+   
+    # content of URL
+    r = requests.get(url)
+ 
+    # Parse HTML Code
+    soup = BeautifulSoup(r.text, 'html.parser')
+ 
+    # find all images in URL
+    images = soup.findAll('img')
+ 
+    # Call folder create function
+    folder_create(images)
+ 
+ 
+url = input("Enter URL:- ")
+ 
+main(url)
+
+
+
+
+https://unsplash.com/s/photos/skyscraper
+https://unsplash.com/s/photos/house
